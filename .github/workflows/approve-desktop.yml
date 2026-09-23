@@ -1,0 +1,25 @@
+name: Approve Desktop Release
+run-name: Approve desktop packet ${{ inputs.packet_sha256 }}
+on:
+  workflow_dispatch:
+    inputs:
+      packet_sha256:
+        description: SHA-256 of the exact owner-reviewed signed packet.json
+        type: string
+        required: true
+permissions: {}
+jobs:
+  approval:
+    if: github.ref == 'refs/heads/main'
+    environment: desktop-production
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Record approval for this packet only
+        env:
+          PACKET_SHA256: ${{ inputs.packet_sha256 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$PACKET_SHA256" =~ ^[a-f0-9]{64}$ ]]
+          printf 'Approved desktop packet SHA-256: %s\n' "$PACKET_SHA256" >> "$GITHUB_STEP_SUMMARY"
